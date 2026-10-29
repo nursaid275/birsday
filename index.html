@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111328">
+  <meta name="description" content="A tiny birthday.exe celebration. Have a legendary birthday!">
+  <title>Birthday.exe — a tiny birthday program</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f5f3ff;
+      --muted: #a6a7c5;
+      --panel: #201344;
+      --mint: #90ffe0;
+      --pink: #ff75c8;
+      --yellow: #ffe66d;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background: radial-gradient(ellipse at 50% 15%, #543287 0, #29164d 38%, #101225 85%);
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      opacity: .3;
+      background-image:
+        radial-gradient(#fff 1px, transparent 1px),
+        radial-gradient(#b2a8ff 1px, transparent 1px);
+      background-position: 0 0, 29px 37px;
+      background-size: 73px 73px, 109px 109px;
+      pointer-events: none;
+    }
+
+    .page-shell {
+      display: grid;
+      min-height: 100vh;
+      place-content: center;
+      padding: 36px 18px 22px;
+    }
+
+    .window {
+      width: min(100%, 680px);
+      overflow: hidden;
+      border: 2px solid #8972d1;
+      border-radius: 12px;
+      background: var(--panel);
+      box-shadow: 0 24px 90px #050612c9, 0 0 0 5px #ff81bd14, 0 0 50px #b166ff25;
+    }
+
+    .titlebar {
+      display: flex;
+      height: 47px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px 0 15px;
+      border-bottom: 1px solid #594879;
+      background: #302052;
+    }
+
+    .window-name {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #e3e2f6;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .app-icon {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border-radius: 6px;
+      color: #17172d;
+      background: var(--mint);
+      font-family: monospace;
+      font-weight: 900;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 7px;
+      color: #aaaac4;
+      font: 16px/1 monospace;
+    }
+
+    .window-controls span {
+      display: grid;
+      width: 23px;
+      height: 22px;
+      place-items: center;
+      border-radius: 4px;
+      background: #ffffff09;
+    }
+
+    .window-controls .close { color: #ffc2d1; }
+
+    .screen {
+      padding: 27px 48px 24px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--mint);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .15em;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 12px #82f7d0a0;
+    }
+
+    .edition {
+      margin-left: 5px;
+      color: var(--yellow);
+    }
+
+    h1 {
+      margin: 8px 0 3px;
+      font-size: clamp(42px, 9vw, 62px);
+      letter-spacing: -.06em;
+      line-height: 1.05;
+      text-shadow: 0 4px #573578, 0 0 24px #ff81bd25;
+    }
+
+    .title-dot { color: var(--pink); }
+
+    .intro {
+      margin: 0;
+      color: #d0c3ef;
+      font-size: 14px;
+    }
+
+    .arcade-stage {
+      position: relative;
+      display: grid;
+      min-height: 220px;
+      align-content: center;
+      justify-items: center;
+      overflow: hidden;
+      margin: 21px 0 16px;
+      border: 2px solid #60488c;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #281747 0%, #34205c 72%, #4d2b71 72%, #4d2b71 100%);
+      box-shadow: inset 0 0 0 4px #100d2580, 0 5px #110d23;
+    }
+
+    .arcade-stage::after {
+      position: absolute;
+      right: 0;
+      bottom: 27%;
+      left: 0;
+      height: 1px;
+      background: #bd93ff18;
+      content: "";
+      box-shadow: 0 3px #bd93ff12, 0 7px #bd93ff0e;
+    }
+
+    .stage-label {
+      position: relative;
+      z-index: 1;
+      padding: 5px 9px;
+      border: 1px solid #9880cc88;
+      border-radius: 3px;
+      color: #d6c1ff;
+      background: #17102ba6;
+      font: 9px monospace;
+      letter-spacing: .15em;
+    }
+
+    .pixel-star {
+      position: absolute;
+      color: var(--yellow);
+      text-shadow: 0 0 12px #ffe66d;
+      animation: twinkle 1.8s ease-in-out infinite alternate;
+    }
+
+    .star-one {
+      top: 38px;
+      left: 17%;
+      font-size: 24px;
+    }
+
+    .star-two {
+      top: 62px;
+      right: 17%;
+      color: var(--pink);
+      font-size: 31px;
+      animation-delay: .7s;
+    }
+
+    .arcade-stage .cake-wrap {
+      margin: 2px auto -2px;
+      transform: scale(1.25);
+      transform-origin: center bottom;
+      filter: drop-shadow(0 7px 0 #291747);
+    }
+
+    .arcade-stage .cake-wrap:hover {
+      animation: cake-hop .4s steps(2, end);
+    }
+
+    .arcade-stage .birthday-message {
+      margin: 0;
+      color: #fff1a5;
+      font-size: 21px;
+      letter-spacing: .08em;
+      text-shadow: 0 2px #b44d9a;
+    }
+
+    .arcade-stage .birthday-subtitle {
+      margin: 4px 0 8px;
+      color: #dfd2fa;
+      font-size: 11px;
+    }
+
+    .level-badge {
+      position: absolute;
+      right: 13px;
+      bottom: 13px;
+      display: grid;
+      padding: 6px 9px;
+      border: 1px solid #ffe66d;
+      border-radius: 4px;
+      color: #261740;
+      background: var(--yellow);
+      font: 8px/1.4 monospace;
+      transform: rotate(5deg);
+      box-shadow: 2px 2px 0 #1a102e;
+    }
+
+    .level-badge b { font-size: 11px; }
+
+    .badge-sparkle {
+      position: absolute;
+      top: -9px;
+      right: -5px;
+      color: white;
+      font-size: 16px;
+    }
+
+    .terminal {
+      margin: 0;
+      padding: 13px 16px 14px;
+      border: 1px solid #594879;
+      border-radius: 7px;
+      background: #100e22;
+      text-align: left;
+      box-shadow: inset 0 1px #ffffff08;
+    }
+
+    .terminal-top {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 9px;
+      border-bottom: 1px solid #292b48;
+      color: #767a9e;
+      font: 9px/1.2 monospace;
+      letter-spacing: .1em;
+    }
+
+    .terminal-lines { padding: 6px 0 3px; }
+
+    .status-line {
+      display: flex;
+      gap: 8px;
+      min-height: 27px;
+      align-items: center;
+      margin: 0;
+      color: #d4d4e8;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace;
+      opacity: .35;
+      transition: opacity .3s, color .3s;
+    }
+
+    .status-line.is-active,
+    .status-line.is-done { opacity: 1; }
+
+    .status-line.is-active { color: var(--mint); }
+    .prompt { color: #898cae; }
+    .status-mark { margin-left: auto; color: var(--mint); }
+
+    .result-line strong {
+      color: var(--yellow);
+      letter-spacing: .07em;
+    }
+
+    .result-line.is-done { color: #fff0b7; }
+
+    .progress-track {
+      height: 5px;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #292b48;
+    }
+
+    .progress-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #7cebd2, #9b91ff, #ff81bd);
+      transition: width .35s ease;
+    }
+
+    .celebration {
+      display: grid;
+      justify-items: center;
+      margin-top: 12px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .5s ease, transform .5s ease;
+    }
+
+    .celebration.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .cake-wrap {
+      position: relative;
+      width: 92px;
+      height: 91px;
+      margin: 0 auto 3px;
+      image-rendering: pixelated;
+    }
+
+    .cake {
+      position: absolute;
+      left: 14px;
+      width: 64px;
+      height: 22px;
+      border: 3px solid #4d3974;
+      background: #ff9bc6;
+      box-shadow: inset 0 -6px #e875a9;
+    }
+
+    .cake-top {
+      top: 39px;
+      border-radius: 5px 5px 0 0;
+      background: #ffd1e5;
+      box-shadow: inset 0 -6px #ffa6ca;
+    }
+
+    .cake-bottom {
+      top: 59px;
+      left: 10px;
+      width: 72px;
+      height: 20px;
+      border-radius: 3px 3px 6px 6px;
+      background: #a78bff;
+      box-shadow: inset 0 -6px #8068d5;
+    }
+
+    .cake i {
+      position: relative;
+      display: inline-block;
+      width: 6px;
+      height: 5px;
+      margin: 0 4px;
+      border-radius: 0 0 4px 4px;
+      background: #ff6f9e;
+    }
+
+    .cake-bottom i { background: #ffe27a; }
+
+    .plate {
+      position: absolute;
+      top: 79px;
+      left: 4px;
+      width: 84px;
+      height: 7px;
+      border: 2px solid #a7a7cf;
+      border-radius: 50%;
+      background: #d9d7f5;
+    }
+
+    .candle {
+      position: absolute;
+      z-index: 1;
+      top: 23px;
+      left: 43px;
+      width: 7px;
+      height: 19px;
+      border: 1px solid #7f67d3;
+      background: repeating-linear-gradient(135deg, #fff 0 3px, #b49bff 3px 6px);
+    }
+
+    .flame {
+      position: absolute;
+      z-index: 2;
+      top: 9px;
+      left: 42px;
+      width: 10px;
+      height: 14px;
+      border-radius: 70% 30% 60% 40%;
+      background: var(--yellow);
+      box-shadow: 0 0 15px #ffe27a99;
+      transform: rotate(8deg);
+      animation: flicker .8s ease-in-out infinite alternate;
+    }
+
+    .birthday-message {
+      margin: 3px 0 0;
+      color: var(--pink);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -.02em;
+    }
+
+    .birthday-subtitle {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .unlock-label {
+      margin: 0;
+      color: var(--mint);
+      font: 9px monospace;
+      letter-spacing: .2em;
+    }
+
+    .achievement {
+      margin: 4px 0 11px;
+      color: var(--yellow);
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .bonus-button {
+      padding: 10px 16px;
+      border: 0;
+      border-bottom: 4px solid #ad368e;
+      border-radius: 5px;
+      color: #281037;
+      background: var(--pink);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 0 18px #ff75c84a;
+      transition: transform .15s, filter .15s;
+    }
+
+    .bonus-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.12);
+    }
+
+    .bonus-button:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+
+    .bonus-button:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+
+    .bonus-message {
+      margin: 11px 0 0;
+      color: #fff1a5;
+      font-size: 18px;
+      font-weight: 800;
+      animation: pop-in .25s ease-out;
+    }
+
+    .gift-drop {
+      position: relative;
+      display: grid;
+      grid-template-columns: 46px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 19px;
+      padding: 13px 14px;
+      border: 1px solid #ffe66d80;
+      border-radius: 7px;
+      background: linear-gradient(105deg, #fff0a512, #ff75c812 85%);
+      text-align: left;
+      box-shadow: inset 0 0 18px #ffe66d08;
+    }
+
+    .gift-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 2px solid #fff1a5;
+      border-radius: 7px;
+      color: #2c1945;
+      background: var(--yellow);
+      font: 900 23px monospace;
+      box-shadow: 3px 3px 0 #8d558c;
+      transform: rotate(-4deg);
+    }
+
+    .gift-kicker {
+      margin: 0 0 3px;
+      color: var(--yellow);
+      font: 8px monospace;
+      letter-spacing: .16em;
+    }
+
+    .gift-copy h2 {
+      margin: 0;
+      color: #fff4c1;
+      font-size: 14px;
+    }
+
+    .gift-copy > p:last-child {
+      margin: 3px 0 0;
+      color: #c9bbdf;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .gift-copy strong {
+      color: var(--mint);
+      white-space: nowrap;
+    }
+
+    .gift-button {
+      padding: 8px 12px;
+      border: 1px solid #a88bd6;
+      border-radius: 4px;
+      color: #f4eaff;
+      background: #5f4485;
+      font: 800 10px monospace;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    .gift-button:hover {
+      transform: translateY(-2px);
+      background: #7755a1;
+    }
+
+    .gift-button:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+
+    .gift-reveal {
+      grid-column: 2 / 4;
+      margin: 0;
+      color: #fff1a5;
+      font-size: 12px;
+      font-weight: 800;
+      animation: pop-in .25s ease-out;
+    }
+
+    .restart-button {
+      margin-top: 19px;
+      padding: 9px 15px;
+      border: 1px solid #545679;
+      border-radius: 7px;
+      color: #eae9fb;
+      background: #ffffff09;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+
+    .restart-button:hover {
+      transform: translateY(-1px);
+      border-color: var(--mint);
+      background: #82f7d012;
+    }
+
+    .restart-button:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+
+    .restart-button span {
+      margin-right: 5px;
+      color: var(--mint);
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      color: #9990b6;
+      font-size: 9px;
+      letter-spacing: .03em;
+    }
+
+    .footer-note span {
+      color: var(--mint);
+      font-family: monospace;
+    }
+
+    .outside-note {
+      margin: 17px 0 0;
+      color: #777995;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-align: center;
+    }
+
+    .outside-note span {
+      padding: 0 5px;
+      color: var(--pink);
+    }
+
+    .confetti-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .confetti {
+      position: absolute;
+      top: -18px;
+      width: 8px;
+      height: 12px;
+      border-radius: 2px;
+      animation: fall var(--fall-time, 2.8s) linear forwards;
+    }
+
+    [hidden] { display: none !important; }
+
+    @keyframes fall {
+      to {
+        transform: translate3d(var(--drift, 0), 110vh, 0) rotate(var(--spin, 500deg));
+        opacity: .8;
+      }
+    }
+
+    @keyframes flicker {
+      from { transform: rotate(-8deg) scale(.92); }
+      to { transform: rotate(9deg) scale(1.08); }
+    }
+
+    @keyframes twinkle {
+      from { opacity: .45; transform: scale(.75) rotate(-10deg); }
+      to { opacity: 1; transform: scale(1.15) rotate(15deg); }
+    }
+
+    @keyframes cake-hop {
+      50% { transform: scale(1.25) translateY(-10px); }
+    }
+
+    @keyframes pop-in {
+      from { opacity: 0; transform: scale(.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @media (max-width: 600px) {
+      .page-shell { padding: 16px 12px; }
+      .screen { padding: 24px 18px 19px; }
+      .eyebrow { flex-wrap: wrap; font-size: 8px; }
+      .arcade-stage { min-height: 205px; }
+      .level-badge { right: 7px; bottom: 8px; }
+      .star-one { left: 9%; }
+      .star-two { right: 9%; }
+      .terminal { padding-right: 12px; padding-left: 12px; }
+      .status-line { font-size: 11px; }
+      .gift-drop {
+        grid-template-columns: 38px 1fr auto;
+        gap: 9px;
+        padding: 11px 9px;
+      }
+      .gift-icon { width: 36px; height: 36px; }
+      .gift-copy h2 { font-size: 12px; }
+      .gift-copy > p:last-child { font-size: 9px; }
+      .gift-button { padding: 8px 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+    <section class="window" aria-label="Birthday.exe program">
+      <header class="titlebar">
+        <div class="window-name"><span class="app-icon" aria-hidden="true">B</span> Birthday.exe</div>
+        <div class="window-controls" aria-hidden="true">
+          <span>–</span><span>□</span><span class="close">×</span>
+        </div>
+      </header>
+
+      <div class="screen">
+        <div class="eyebrow">
+          <span class="live-dot"></span>
+          BIRTHDAY CELEBRATION PROGRAM
+          <span class="edition">★ DELUXE EDITION ★</span>
+        </div>
+
+        <h1>Birthday<span class="title-dot">.</span>exe</h1>
+        <p class="intro">Today’s forecast: 100% chance of cake.</p>
+
+        <div class="arcade-stage" aria-label="Birthday arcade celebration">
+          <span class="pixel-star star-one" aria-hidden="true">✦</span>
+          <span class="pixel-star star-two" aria-hidden="true">✧</span>
+          <span class="stage-label">★ TODAY'S MAIN CHARACTER ★</span>
+
+          <div class="cake-wrap" role="img" aria-label="Pixel art birthday cake with a candle">
+            <div class="flame"></div>
+            <div class="candle"></div>
+            <div class="cake cake-top"><i></i><i></i><i></i></div>
+            <div class="cake cake-bottom"><i></i><i></i><i></i></div>
+            <div class="plate"></div>
+          </div>
+
+          <div class="birthday-message">HAPPY BIRTHDAY!</div>
+          <p class="birthday-subtitle">Wishing you a day full of good surprises.</p>
+
+          <div class="level-badge">
+            <span>LEVEL UP!</span>
+            <b>+1 YEAR</b>
+            <span class="badge-sparkle">✦</span>
+          </div>
+        </div>
+
+        <div class="terminal" aria-live="polite" aria-atomic="false">
+          <div class="terminal-top">
+            <span>SYS://HAPPY-DAY</span>
+            <span>v.09.11</span>
+          </div>
+
+          <div class="terminal-lines">
+            <p class="status-line">
+              <span class="prompt">&gt;</span>
+              <span>Starting birthday.exe</span>
+              <span class="status-mark">···</span>
+            </p>
+            <p class="status-line">
+              <span class="prompt">&gt;</span>
+              <span>Loading birthday</span>
+              <span class="status-mark">···</span>
+            </p>
+            <p class="status-line">
+              <span class="prompt">&gt;</span>
+              <span>Checking happiness</span>
+              <span class="status-mark">···</span>
+            </p>
+            <p class="status-line result-line">
+              <span class="prompt">&gt;</span>
+              <span>Result: <strong>LEGENDARY!</strong></span>
+              <span class="status-mark">✓</span>
+            </p>
+          </div>
+
+          <div class="progress-track" role="progressbar" aria-label="Birthday program progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <span class="progress-fill"></span>
+          </div>
+        </div>
+
+        <div class="celebration" id="celebration" aria-live="polite">
+          <p class="unlock-label">✦ ACHIEVEMENT UNLOCKED ✦</p>
+          <p class="achievement">Certified Birthday Legend</p>
+          <button class="bonus-button" id="bonus-button" type="button">
+            Open your bonus message →
+          </button>
+          <p class="bonus-message" id="bonus-message" hidden></p>
+        </div>
+
+        <section class="gift-drop" aria-labelledby="gift-title">
+          <div class="gift-icon" aria-hidden="true"><span>?</span></div>
+          <div class="gift-copy">
+            <p class="gift-kicker">BONUS LOOT DROP</p>
+            <h2 id="gift-title">A little gift, your pick</h2>
+            <p>Choose any little thing up to <strong>100 сом</strong>. Birthday loot unlocked!</p>
+          </div>
+          <button class="gift-button" id="gift-button" type="button" aria-expanded="false" aria-controls="gift-reveal">
+            Open
+          </button>
+          <p class="gift-reveal" id="gift-reveal" hidden>
+            🎁 Your 100 сом birthday pick is ready!
+          </p>
+        </section>
+
+        <button class="restart-button" id="restart-button" type="button" hidden>
+          <span aria-hidden="true">↻</span> Run it again
+        </button>
+        <p class="footer-note">
+          <span>INSERT CAKE TO CONTINUE</span> &nbsp; • &nbsp; Made of pixels &amp; good vibes
+        </p>
+      </div>
+    </section>
+
+    <p class="outside-note">NO INSTALLATION REQUIRED <span>✦</span> 100% BIRTHDAY-POWERED</p>
+  </main>
+
+  <div class="confetti-layer" id="confetti" aria-hidden="true"></div>
+
+  <script>
+    const lines = [...document.querySelectorAll(".status-line")];
+    const progress = document.querySelector(".progress-fill");
+    const progressBar = document.querySelector('[role="progressbar"]');
+    const celebration = document.querySelector("#celebration");
+    const restartButton = document.querySelector("#restart-button");
+    const bonusButton = document.querySelector("#bonus-button");
+    const bonusMessage = document.querySelector("#bonus-message");
+    const giftButton = document.querySelector("#gift-button");
+    const giftReveal = document.querySelector("#gift-reveal");
+    const confettiLayer = document.querySelector("#confetti");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const stepDelay = 720;
+
+    let timers = [];
+    let confettiTimer;
+    let bonusIndex = 0;
+
+    const bonusLines = [
+      "You're gorgeous! ✨",
+      "You look absolutely lovely! 🌷",
+      "You're a total star! ⭐",
+      "You make this day brighter! ☀️",
+      "You're tea-riffic! ☕",
+      "Hope your birthday is brew-tiful! 🎂",
+      "Have an egg-cellent day! 🥚",
+      "You deserve a piece of the (birth)day cake! 🍰"
+    ];
+
+    function clearTimers() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      clearTimeout(confettiTimer);
+    }
+
+    function launchConfetti() {
+      confettiLayer.replaceChildren();
+      const colors = ["#82f7d0", "#ff81bd", "#ffe27a", "#a99aff", "#ffffff"];
+
+      for (let i = 0; i < 55; i += 1) {
+        const piece = document.createElement("i");
+        piece.className = "confetti";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.backgroundColor = colors[i % colors.length];
+        piece.style.setProperty("--drift", `${Math.random() * 150 - 75}px`);
+        piece.style.setProperty("--spin", `${Math.random() * 900 - 450}deg`);
+        piece.style.setProperty("--fall-time", `${2.1 + Math.random() * 1.8}s`);
+        piece.style.animationDelay = `${Math.random() * 0.75}s`;
+        confettiLayer.append(piece);
+      }
+
+      confettiTimer = setTimeout(() => confettiLayer.replaceChildren(), 5200);
+    }
+
+    function runProgram() {
+      clearTimers();
+      confettiLayer.replaceChildren();
+      celebration.classList.remove("is-visible");
+      restartButton.hidden = true;
+      bonusMessage.hidden = true;
+      bonusMessage.textContent = "";
+      bonusButton.disabled = false;
+      bonusButton.textContent = "Open your bonus message →";
+      progress.style.width = "0%";
+      progressBar.setAttribute("aria-valuenow", "0");
+      lines.forEach((line) => line.classList.remove("is-active", "is-done"));
+
+      lines.forEach((line, index) => {
+        const delay = reducedMotion.matches ? 0 : index * stepDelay;
+
+        timers.push(setTimeout(() => {
+          if (index > 0) {
+            lines[index - 1].classList.replace("is-active", "is-done");
+          }
+
+          line.classList.add("is-active");
+          const value = Math.round(((index + 1) / lines.length) * 100);
+          progress.style.width = `${value}%`;
+          progressBar.setAttribute("aria-valuenow", String(value));
+
+          if (index === lines.length - 1) {
+            line.classList.replace("is-active", "is-done");
+
+            timers.push(setTimeout(() => {
+              celebration.classList.add("is-visible");
+              restartButton.hidden = false;
+              if (!reducedMotion.matches) launchConfetti();
+            }, reducedMotion.matches ? 0 : 350));
+          }
+        }, delay));
+      });
+    }
+
+    restartButton.addEventListener("click", runProgram);
+
+    bonusButton.addEventListener("click", () => {
+      bonusMessage.textContent = bonusLines[bonusIndex % bonusLines.length];
+      bonusIndex += 1;
+      bonusMessage.hidden = false;
+      if (!reducedMotion.matches) launchConfetti();
+      bonusButton.textContent = "Another one! ✦";
+    });
+
+    giftButton.addEventListener("click", () => {
+      const isOpen = giftButton.getAttribute("aria-expanded") === "true";
+      giftButton.setAttribute("aria-expanded", String(!isOpen));
+      giftReveal.hidden = isOpen;
+      giftButton.textContent = isOpen ? "Open" : "Got it!";
+      if (!isOpen && !reducedMotion.matches) launchConfetti();
+    });
+
+    runProgram();
+  </script>
+</body>
+</html>
